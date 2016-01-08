@@ -1,0 +1,105 @@
+
+/* Ivan Molano - ls31623 */
+
+/* Creamos la base de datos GeoIP */
+
+CREATE DATABASE GeoIP;
+
+/* Nos situamos en la base de datos GeoIP */
+
+use GeoIP;
+
+/* Creamos la tabla location */
+
+DROP TABLE IF EXISTS cities_locations;
+CREATE TABLE cities_locations(
+geoname_id varchar(20),
+locale_code varchar(20),
+continent_code varchar(20),
+continent_name varchar(20),
+country_iso_code varchar(20),
+country_name varchar(20),
+subdivision_1_iso_code varchar(20),
+subdivision_1_name varchar(20),
+subdivision_2_iso_code varchar(20),
+subdivision_2_name varchar(20),
+city_name varchar(20),
+metro_code varchar(20),
+time_zone varchar(20)
+);
+
+LOAD DATA LOCAL INFILE '/logs/GeoLite2-City-Locations-es.CSV'
+INTO TABLE cities_locations
+FIELDS TERMINATED BY ','
+OPTIONALLY ENCLOSED BY '\"'
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES;
+
+/* Creamos tabla cities_blocks_ip4 */
+
+DROP TABLE IF EXITS cities_blocks_ip4;
+CREATE TABLE cities_blocks_ip4(
+network varchar(20),
+geoname_id varchar(20),
+registered_country_geoname_id varchar(20),
+represented_country_geoname_id varchar(20),
+is_anonymous_proxy varchar(20),
+is_satellite_provider varchar(20) ,
+postal_code varchar(20),
+latitude varchar(20),
+longitude varchar(20)
+);
+
+LOAD DATA LOCAL INFILE '/logs/GeoLite2-City-Blocks-IPv4.CSV'
+INTO TABLE cities_blocks_ip4
+FIELDS TERMINATED BY ','
+OPTIONALLY ENCLOSED BY '\"'
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES;
+
+
+/* Creamos tabla countries_locations */
+
+DROP TABLE IF EXITS countries_locations;
+CREATE TABLE countries_locations(
+network varchar(20),
+geoname_id varchar(20),
+registered_country_geoname_id varchar(20),
+represented_country_geoname_id varchar(20),
+is_anonymous_proxy varchar(20),
+is_satellite_provider varchar(20)
+);
+
+LOAD DATA LOCAL INFILE '/logs/GeoLite2-Country-Locations-es.CSV'
+INTO TABLE countries_locations
+FIELDS TERMINATED BY ','
+OPTIONALLY ENCLOSED BY '\"'
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES;
+
+/* Creamos tabla countries_blocks_ip4 */
+
+GeoLite2-Country-Blocks-IPv4
+DROP TABLE IF EXITS countries_blocks_ip4;
+CREATE TABLE countries_blocks_ip4(
+network varchar(20),
+geoname_id varchar(20),
+registered_country_geoname_id varchar(20),
+represented_country_geoname_id varchar(20),
+is_anonymous_proxy varchar(20),
+is_satellite_provider varchar(20)
+);
+
+LOAD DATA LOCAL INFILE '/logs/GeoLite2-Country-Blocks-IPv4.CSV'
+INTO TABLE countries_locations
+FIELDS TERMINATED BY ','
+OPTIONALLY ENCLOSED BY '\"'
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES;
+
+/* Realizamos consulta de la base de datos */
+
+SELECT c.continent_name, b.latitude, b.longitude
+FROM cities_locations c join cities_blocks_ip4 b ON (c.geoname_id=b.geoname_id)
+WHERE '83.43.204.0/24' >= b.network AND '83.43.1.0/25' <= b.network;
+
